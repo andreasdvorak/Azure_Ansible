@@ -1,0 +1,29 @@
+---
+- name: Test
+  hosts: localhost
+  tasks:
+    - name: Get Python interpreter path
+      ansible.builtin.command: which python
+      register: python_path
+
+    - name: Debug Python path
+      ansible.builtin.debug:
+        var: python_path.stdout
+
+    - name: Debug Python interpreter
+      ansible.builtin.debug:
+        msg: "Ansible Python interpreter: {{ ansible_python_interpreter }}"
+
+    - name: Debug Python interpreter
+      ansible.builtin.command: which python
+      register: python_path
+    - name: Show Python path
+      ansible.builtin.debug:
+        var: python_path.stdout
+
+    - name: Debug Azure library
+      ansible.builtin.command: python -c "from azure.mgmt.resource import ResourceManagementClient; print('Azure works')"
+      register: azure_test
+    - name: Show Azure test
+      ansible.builtin.debug:
+        var: azure_test.stdout

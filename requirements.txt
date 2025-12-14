@@ -1,0 +1,6 @@
+ansible
+ansible-lint
+
+pylint
+
+yamllint

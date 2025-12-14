@@ -1,0 +1,27 @@
+---
+- name: Get public IP of the VM
+  azure.azcollection.azure_rm_publicipaddress_info:
+    resource_group: "{{ resource_group }}"
+    name: "{{ public_ip_name }}"
+  register: public_ip_info
+
+- name: Extract IP address
+  ansible.builtin.set_fact:
+    vm_public_ip: "{{ public_ip_info.publicipaddresses[0].ip_address }}"
+
+- name: Show IP for verification
+  ansible.builtin.debug:
+    msg: "Public IP of VM is {{ vm_public_ip }}"
+
+- name: Ensure inventory directory exists
+  ansible.builtin.file:
+    path: "{{ inventory_file | dirname }}"
+    state: directory
+
+- name: Update inventory file with VM details
+  ansible.builtin.blockinfile:
+    path: "{{ inventory_file }}"
+    create: true
+    block: |
+      [azure_vms]
+      myLinuxVM ansible_host={{ vm_public_ip }} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id

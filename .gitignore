@@ -1,0 +1,51 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# ---- Virtual Environments ----
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+
+# ---- Ansible ----
+# Ansible roles and collections cache
+.ansible
+*.retry
+*.log
+*.tmp
+*.bak
+collections
+.azure/
+inventory
+
+# Vault password files
+vault_pass.txt
+.vault_pass
+
+# Inventory files (optional, falls sensibel)
+inventory.ini
+inventory.yml
+
+# SSH keys (niemals ins Repo!)
+*.pem
+*.key
+
+# 
+# ---- IDEs and Editors ----
+.vscode/
+.idea/
+*.code-workspace

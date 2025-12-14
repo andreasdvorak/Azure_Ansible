@@ -1,0 +1,14 @@
+---
+- name: Update inventory file with Azure VM public IP
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vault/vault.yml
+  vars:
+    resource_group: "myResourceGroup"
+    public_ip_name: "myPublicIP"
+    inventory_file: "inventory/hosts.ini"
+  tasks:
+    - name: Include updatge inventory role
+      ansible.builtin.include_role:
+        name: Linux_vm
