@@ -1,6 +1,5 @@
-ansible
-ansible-lint
-
-pylint
-
-yamllint
+ansible==13.2.0
+ansible-core==2.20.1
+ansible-lint==26.4.0
+pylint==4.0.4
+yamllint==1.38.0

@@ -25,12 +25,12 @@ To run the terraform apply you first need to login at Azure
     az account show
 
 ## Service Principals
-I am using a service principal with high permissions for the administration of Identity Management and a second principal with lower permissions for resource managemant. The terraform-sp-id is create by the Azure Cli and the terraform-sp-rm by Terraform.
+I am using a service principal with high permissions for the administration of Identity Management and a second principal with lower permissions for resource managemant.
 
 ### Service principal Identity Management
 This configuration needs to be done with Global Administrator.
 
-To access Azure with Terraform you need a client_id and client_secret
+To access Azure with Ansible you need a client_id and client_secret.
 
 Create a Service Principal
 
@@ -57,7 +57,7 @@ Get Role IDs
 
 
 ### Add role contributor
-You need to add the role contributor to an service principal on the subscription level
+You need to add the role contributor to the service principal on the subscription level
 
 ```
 SUBSCRIPTION_ID="<deine-Subscription-ID>"
@@ -75,10 +75,10 @@ To see it in the Azure Portal got to the subscription -> Access control (IAM) ->
 Put the Azure credentials in the file .azure/credentials
 ```
 [default]
-client_id="xxxxxxxxxx"
-secret="xxxxxxxxxxxx"
-subscription_id="xxxxxxxxxxxxxxxx"
-tenant="xxxxxxxxxxxxx"
+client_id=xxxxxxxxxx
+secret=xxxxxxxxxxxx
+subscription_id=xxxxxxxxxxxxxxxx
+tenant=xxxxxxxxxxxxx
 ```
 
 Or
@@ -103,7 +103,7 @@ The result is the folder "env"
 
 activation of virtual environment
 ```
-. env/bin/activate
+source env/bin/activate
 ```
 
 ### Python requirements
@@ -126,6 +126,11 @@ pip install -r ./collections/ansible_collections/azure/azcollection/requirements
 List collections
 ```
 ansible-galaxy collection list
+```
+
+Installation of collection
+```bash
+ansible-galaxy collection install -r requirements.yml --collections-path ./collections
 ```
 
 ### Verify Python
@@ -171,6 +176,7 @@ ansible-playbook -i inventory/inventory.ini ./playbooks/tests.yml
 ansible-playbook -i inventory/inventory.ini ./playbooks/create_vm.yml
 ```
 
+Connection test
 ```
 ansible localhost -m azure.azcollection.azure_rm_resourcegroup -a "name=test location=westeurope"
 ```
