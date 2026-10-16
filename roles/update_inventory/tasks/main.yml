@@ -1,27 +1,33 @@
 ---
-- name: Get public IP of the VM
-  azure.azcollection.azure_rm_publicipaddress_info:
+- name: Get the network interface of the VM
+  azure.azcollection.azure_rm_networkinterface_info:
     resource_group: "{{ resource_group }}"
-    name: "{{ public_ip_name }}"
-  register: public_ip_info
+    name: "{{ networkinterface_name }}"
+  register: update_inventory_networkinterface_info
 
-- name: Extract IP address
+- name: Extract the IP configuration of the network interface
   ansible.builtin.set_fact:
-    vm_public_ip: "{{ public_ip_info.publicipaddresses[0].ip_address }}"
+    update_inventory_ip_configuration: >-
+      {{ update_inventory_networkinterface_info.networkinterfaces[0].ip_configurations[0] }}
 
-- name: Show IP for verification
+- name: Extract the private IP address
+  ansible.builtin.set_fact:
+    update_inventory_private_ip: "{{ update_inventory_ip_configuration.private_ip_address }}"
+
+- name: Show the private IP for verification
   ansible.builtin.debug:
-    msg: "Public IP of VM is {{ vm_public_ip }}"
+    msg: "Private IP of {{ update_inventory_target_host }} is {{ update_inventory_private_ip }}"
 
-- name: Ensure inventory directory exists
+- name: Ensure the host_vars directory exists
   ansible.builtin.file:
-    path: "{{ inventory_file | dirname }}"
+    path: "{{ update_inventory_host_vars_dir }}"
     state: directory
+    mode: "0755"
 
-- name: Update inventory file with VM details
-  ansible.builtin.blockinfile:
-    path: "{{ inventory_file }}"
+- name: Write the private IP as ansible_host into the host_vars file
+  ansible.builtin.lineinfile:
+    path: "{{ update_inventory_host_vars_file }}"
+    regexp: '^ansible_host:'
+    line: "ansible_host: {{ update_inventory_private_ip }}"
     create: true
-    block: |
-      [azure_vms]
-      myLinuxVM ansible_host={{ vm_public_ip }} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id
+    mode: "0644"

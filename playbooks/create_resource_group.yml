@@ -1,0 +1,7 @@
+---
+- name: Provision Azure resource group
+  hosts: localhost
+  connection: local
+  tags: create_resource_group
+  roles:
+    - role: resource_group

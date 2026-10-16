@@ -1,0 +1,34 @@
+---
+extends: default
+
+rules:
+  # Keep the following rules in sync with the yamllint configuration that
+  # ansible-lint expects, otherwise ansible-lint reports "incompatible
+  # custom yamllint configuration" and disables fix mode.
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
+  line-length:
+    max: 100
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+    ignore: |
+      # do ignore any files
+
+ignore:
+  - .ansible/
+  - .git/
+  - .opencode/
+  - .vscode/
+  - .venv/
+  - build/
+  - collections/
+  - dist/

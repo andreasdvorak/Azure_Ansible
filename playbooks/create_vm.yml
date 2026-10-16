@@ -3,7 +3,5 @@
   hosts: azure_vms
   connection: local
   tags: create_vm
-  tasks:
-    - name: Include Linux_vm role to create VM
-      ansible.builtin.include_role:
-        name: Linux_vm
+  roles:
+    - role: linux_vm
