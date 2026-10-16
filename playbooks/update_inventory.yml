@@ -1,14 +1,7 @@
 ---
-- name: Update inventory file with Azure VM public IP
-  hosts: localhost
+- name: Write Azure VM private IP to the inventory
+  hosts: azure_vms
   connection: local
-  vars_files:
-    - vault/vault.yml
-  vars:
-    resource_group: "myResourceGroup"
-    public_ip_name: "myPublicIP"
-    inventory_file: "inventory/hosts.ini"
-  tasks:
-    - name: Include updatge inventory role
-      ansible.builtin.include_role:
-        name: Linux_vm
+  tags: update_inventory
+  roles:
+    - role: update_inventory

@@ -1,0 +1,8 @@
+---
+# Shared input variables: these names are also used by the inventory and by
+# other roles, so they stay unprefixed.
+vm_name: ""  # noqa: var-naming[no-role-prefix]
+location: ""  # noqa: var-naming[no-role-prefix]
+resource_group: ""  # noqa: var-naming[no-role-prefix]
+env: ""  # noqa: var-naming[no-role-prefix]
+responsible: ""  # noqa: var-naming[no-role-prefix]
