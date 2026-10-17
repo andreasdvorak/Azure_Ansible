@@ -29,7 +29,7 @@ repository.
   connection: local
   tags: create_resource_group
   roles:
-    - role: resource_group
+    - role: azure_resource_group
 ```
 
 ## Multiple roles
@@ -43,15 +43,15 @@ List roles in the order they must run:
   connection: local
   tags: create_vm
   roles:
-    - role: resource_group
-    - role: linux_vm
+    - role: azure_resource_group
+    - role: azure_linux_vm
 ```
 
 Role-specific variables or tags can be set next to the role:
 
 ```yaml
   roles:
-    - role: resource_group
+    - role: azure_resource_group
       vars:
         resource_group: "rg-dev"
       tags: create_resource_group
@@ -68,7 +68,7 @@ When a role must run against VM hosts, target the existing group:
   connection: local
   tags: create_vm
   roles:
-    - role: linux_vm
+    - role: azure_linux_vm
 ```
 
 `connection: local` is still used because the Azure modules call the Azure API

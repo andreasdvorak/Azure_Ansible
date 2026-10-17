@@ -1,0 +1,3 @@
+---
+# Every entry must include a name and non-empty env/responsible tags.
+resource_groups: []  # noqa: var-naming[no-role-prefix]

@@ -69,7 +69,7 @@ example_role_result_id: ""
 ## README
 
 Use the full template in `role-readme-template.md` (derived from
-`roles/resource_group/README.md`). Copy it to `roles/<role_name>/README.md`,
+`roles/azure_resource_group/README.md`). Copy it to `roles/<role_name>/README.md`,
 replace the placeholders, and keep every section - write "None" or "-" when a
 section does not apply instead of removing it.
 

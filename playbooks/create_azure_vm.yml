@@ -4,4 +4,6 @@
   connection: local
   tags: create_vm
   roles:
-    - role: linux_vm
+    - role: azure_resource_group
+    - role: azure_linux_vm
+    - role: update_inventory

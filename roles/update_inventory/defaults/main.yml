@@ -1,6 +1,6 @@
 ---
 # resource_group and networkinterface_name are shared input variables: they keep
-# the names used by the inventory and the linux_vm role.
+# the names used by the inventory and the azure_linux_vm role.
 resource_group: ""  # noqa: var-naming[no-role-prefix]
 networkinterface_name: ""  # noqa: var-naming[no-role-prefix]
 

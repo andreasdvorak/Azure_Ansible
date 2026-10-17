@@ -6,7 +6,7 @@ description: Use when creating, editing, or reviewing anything in this Ansible p
 # Ansible Conventions (Azure_Ansible)
 
 Follow these conventions for every change in this repository. They match the
-existing roles (`linux_vm`, `resource_group`, `update_inventory`) and playbooks.
+existing roles (`azure_linux_vm`, `azure_resource_group`, `update_inventory`) and playbooks.
 
 ## Language
 
@@ -27,7 +27,7 @@ Never write new content in German or another language.
 
 1. Read `references/role-template.md` for the expected file set and
    conventions before you start.
-2. Use a snake_case role name (for example `linux_vm`, `resource_group`,
+2. Use a snake_case role name (for example `azure_linux_vm`, `azure_resource_group`,
    `update_inventory`). `ansible-lint` enforces this via `role-name`
    (`^[a-z][a-z0-9_]*$`); never use camelCase such as `Linux_vm`.
 3. Create `roles/<role_name>/tasks/main.yml` and
@@ -71,7 +71,7 @@ Never write new content in German or another language.
      connection: local
      tags: create_resource_group
      roles:
-       - role: resource_group
+       - role: azure_resource_group
    ```
 
 5. Use `hosts: localhost` for plays whose role talks to the Azure API, and the
@@ -187,6 +187,6 @@ az group delete --name <resource_group>
 
 - `references/role-template.md` - role file set and conventions.
 - `references/role-readme-template.md` - full README template for a role,
-  based on `roles/resource_group/README.md`.
+  based on `roles/azure_resource_group/README.md`.
 - `references/playbook-template.md` - playbook structure and examples.
 - `scripts/validate.sh` - syntax-check playbooks.
