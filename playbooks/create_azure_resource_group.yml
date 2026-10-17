@@ -4,4 +4,4 @@
   connection: local
   tags: create_resource_group
   roles:
-    - role: resource_group
+    - role: azure_resource_group

@@ -1,0 +1,38 @@
+---
+- name: Delete Azure resource group and its resources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Prompt for resource group name
+      ansible.builtin.pause:
+        prompt: Resource-group name to delete
+        echo: true
+      register: azure_resource_group_delete_name
+
+    - name: Prompt for exact-name confirmation
+      ansible.builtin.pause:
+        prompt: Enter the same name again to confirm deletion
+        echo: true
+      register: azure_resource_group_delete_confirm
+
+    - name: Require exact-name confirmation
+      ansible.builtin.assert:
+        that:
+          - >-
+            azure_resource_group_delete_name.user_input | trim | length > 0
+          - >-
+            azure_resource_group_delete_name.user_input ==
+            azure_resource_group_delete_name.user_input | trim
+          - >-
+            azure_resource_group_delete_confirm.user_input ==
+            azure_resource_group_delete_name.user_input
+        fail_msg: >-
+          Deletion aborted: the resource group name is empty or the
+          confirmation does not match.
+
+    - name: Delete resource group and all contained resources
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ azure_resource_group_delete_name.user_input }}"
+        state: absent
+        force_delete_nonempty: true

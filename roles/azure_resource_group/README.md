@@ -1,15 +1,16 @@
-# Ansible Role: resource_group
+# Ansible Role: azure_resource_group
 
-Creates an Azure resource group.
+Creates the Azure resource groups listed in the inventory.
 
 ### Features
 
-- Creates a single Azure resource group in a chosen Azure region.
+- Creates every Azure resource group listed in `resource_groups`, in a chosen
+  Azure region.
 - Applies `environment` and `responsible` tags for ownership and lifecycle
   tracking.
 - Is idempotent: an existing resource group is left in place and its tags are
   updated to match the configured values.
-- Can be run before other Azure roles to prepare the resource group they use.
+- Can be run before other Azure roles to prepare the resource groups they use.
 
 ## Dependencies
 
@@ -23,7 +24,7 @@ Creates an Azure resource group.
 
 | Role | Required | Purpose |
 | --- | --- | --- |
-| None | - | The role can be used as the first role in a play that creates further Azure resources in the same resource group. |
+| `azure_linux_vm` | No | Creates the VM and its network resources in the created resource group. Run it after this role. |
 
 ### External Requirements
 
@@ -62,10 +63,8 @@ entry point is `playbooks/create_resource_group.yml`:
   hosts: localhost
   connection: local
   tags: create_resource_group
-  tasks:
-    - name: Include resource_group role to create resource group
-      ansible.builtin.include_role:
-        name: resource_group
+  roles:
+    - role: azure_resource_group
 ```
 
 The role faces Azure and runs on the Ansible controller, so `connection: local`
@@ -74,36 +73,49 @@ example `inventory/host_vars/testvm1.yml` or `inventory/group_vars/azure_vms.yml
 
 ## Configuration
 
-The recommended configuration is the inventory. The resource group name,
-location, and tags are taken from the `resource_group`, `location`, `env`, and
-`responsible` variables:
+The recommended configuration is the inventory. The resource groups are taken
+from `resource_groups` in `inventory/group_vars/all.yml`; the region comes from
+the shared `location` variable. Each list entry is a mapping with the group
+`name` and its required, non-empty `env` and `responsible` tags:
 
 ```yaml
-resource_group: "rg-dev"
 location: "westeurope"
 env: "development"
 responsible: "devops-team"
+
+resource_groups:
+  - name: "rg-dev"
+    env: "development"
+    responsible: "devops-team"
+  - name: "rg-test"
+    env: "development"
+    responsible: "devops-team"
 ```
 
-The same values are already used by the `linux_vm` role, so a shared inventory
-entry works for both roles.
+Each entry creates one resource group, so adding an entry to the list is enough
+to have the next run create it. Entries without a name or either tag, or with
+empty values, fail validation before any resource group is created.
+
+The `azure_linux_vm` role also uses `env` and `responsible` to tag VM
+resources, but its values are configured separately from each resource group's
+required tags.
+
+A VM host still selects the resource group it belongs to with the singular
+`resource_group` variable (see the `azure_linux_vm` role); that name has to be
+the `name` of one of the entries in `resource_groups`.
 
 | Role variable | Default | Description |
 | --- | --- | --- |
-| `resource_group` | `""` | Name of the resource group to create. Required. |
-| `location` | `""` | Azure region for the resource group, for example `westeurope`. Required. |
-| `env` | `""` | Value of the `environment` tag on the resource group. |
-| `responsible` | `""` | Value of the `responsible` tag on the resource group. |
+| `resource_groups` | `[]` | List of resource groups to create. Each entry must be a mapping with non-empty `name`, `env`, and `responsible` string values. Required. |
+| `location` | `""` | Azure region for every created resource group, for example `westeurope`. Required. |
 
 Role variables can also be overridden directly in a playbook or on the command
 line, for example:
 
 ```bash
 ansible-playbook playbooks/create_resource_group.yml \
-  -e resource_group=rg-dev \
-  -e location=westeurope \
-  -e env=development \
-  -e responsible=devops-team
+  -e '{"resource_groups": [{"name": "rg-dev", "env": "development", "responsible": "devops-team"}]}' \
+  -e location=westeurope
 ```
 
 The role does not create a subscription, configure Azure credentials, or assign
@@ -129,10 +141,13 @@ No role-specific task tags are defined inside the role.
 
 ## Known Limitations
 
-- The role creates a single resource group. To create several, include it
-  multiple times with different variable values, or loop over it in a playbook.
-- The role does not delete resource groups and does not manage resources inside
-  them.
+- The role only creates the listed resource groups. Removing a name from
+  `resource_groups` does not delete it in Azure, and the role never deletes a
+  resource group or manages resources inside it.
+- The role does not validate that the `resource_group` value of a VM host is
+  one of the listed names.
+- Every resource group entry must include non-empty `env` and `responsible`
+  tags; shared tag fallbacks are not supported.
 - The role does not create or configure the Azure subscription, credentials, or
   role assignments.
 - Changing `location` for an existing resource group has no effect: an Azure
@@ -154,12 +169,21 @@ ansible-playbook --syntax-check playbooks/create_resource_group.yml
 
 ## Deletion
 
-Delete the resource group, and every resource it contains, with:
+Use the dedicated deletion playbook to delete one resource group and every
+resource it contains:
 
 ```bash
-az group delete --name rg-dev
+ansible-playbook playbooks/delete_azure_resource_group.yml
 ```
 
-Add `--yes` to skip the confirmation prompt. Deleting a resource group removes
-all resources inside it and cannot be undone, so confirm that the resource
-group no longer contains anything that is still needed.
+The playbook prompts for the resource group name and requires it to be entered
+again exactly before deleting. It uses `force_delete_nonempty: true` with
+`state: absent`; the Azure identity must have permission to delete the group
+and its resources. Deletion is irreversible, so verify the name and contents
+before confirming.
+
+Validate the playbook without contacting Azure:
+
+```bash
+ansible-playbook --syntax-check playbooks/delete_azure_resource_group.yml
+```

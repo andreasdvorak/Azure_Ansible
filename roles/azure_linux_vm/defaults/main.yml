@@ -1,0 +1,23 @@
+---
+# Shared input variables: these names are also used by the inventory and by
+# other roles, so they stay unprefixed.
+resource_group: ""  # noqa: var-naming[no-role-prefix]
+location: ""  # noqa: var-naming[no-role-prefix]
+env: ""  # noqa: var-naming[no-role-prefix]
+responsible: ""  # noqa: var-naming[no-role-prefix]
+networkinterface_name: ""  # noqa: var-naming[no-role-prefix]
+
+# Role-specific variables carry the role-name prefix.
+azure_linux_vm_name: ""
+azure_linux_vm_size: ""
+azure_linux_vm_admin_username: ""
+azure_linux_vm_admin_password: ""
+azure_linux_vm_os_offer: ""
+azure_linux_vm_os_sku: ""
+azure_linux_vm_publisher: ""
+azure_linux_vm_managed_disk_type: ""
+azure_linux_vm_virtual_network_name: ""
+azure_linux_vm_virtual_network_address_prefixes: ""
+azure_linux_vm_subnet_name: ""
+azure_linux_vm_public_ip_name: ""
+azure_linux_vm_networkinterface_ip_configurations_name: ""

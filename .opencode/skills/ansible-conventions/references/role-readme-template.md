@@ -1,7 +1,7 @@
 # Role README template
 
 Template for the `README.md` of a role. It is based on
-`roles/resource_group/README.md`. Copy this file to
+`roles/azure_resource_group/README.md`. Copy this file to
 `roles/<role_name>/README.md` and replace every placeholder (`<role_name>`,
 `<short description>`, and so on). Never delete a section that does not apply;
 write "None" or "-" instead, as shown in this template.

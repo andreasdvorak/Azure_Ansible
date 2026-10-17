@@ -21,7 +21,7 @@ host as `ansible_host`.
 
 | Role | Required | Purpose |
 | --- | --- | --- |
-| `linux_vm` | Yes | Creates the network interface and VM whose private IP this role reads. The network interface must exist before this role runs. |
+| `azure_linux_vm` | Yes | Creates the network interface and VM whose private IP this role reads. The network interface must exist before this role runs. |
 
 ### Optional Roles
 
@@ -87,7 +87,7 @@ resource_group: "rg-dev"
 networkinterface_name: "mynic"
 ```
 
-The same values are already used by the `linux_vm` role, so a shared inventory
+The same values are already used by the `azure_linux_vm` role, so a shared inventory
 entry works for both roles.
 
 | Role variable | Default | Description |
