@@ -1,6 +1,6 @@
 ---
-name: Ansible Conventions
-description: Use when creating, editing, or reviewing anything in this Ansible project - roles, playbooks, inventory, or variables for Azure. Enforces the role layout, naming, playbook structure, Azure collection usage, and validation steps used in this repository.
+name: ansible-conventions
+description: "Use when creating, editing, or reviewing anything in this Ansible project - roles, playbooks, inventory, or variables for Azure. Enforces the role layout, naming, playbook structure, Azure collection usage, and validation steps used in this repository."
 ---
 
 # Ansible Conventions (Azure_Ansible)
