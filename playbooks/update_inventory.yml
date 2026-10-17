@@ -1,6 +1,6 @@
 ---
 - name: Write Azure VM private IP to the inventory
-  hosts: azure_vms
+  hosts: azure
   connection: local
   tags: update_inventory
   roles:

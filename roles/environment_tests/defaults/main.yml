@@ -1,0 +1,7 @@
+---
+environment_tests_checks:
+  - controller
+  - network
+  - azure
+
+resource_group: ""  # noqa: var-naming[no-role-prefix]

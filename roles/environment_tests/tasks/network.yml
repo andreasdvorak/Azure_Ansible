@@ -1,0 +1,10 @@
+---
+- name: Verify HTTPS access to Azure Resource Manager metadata
+  ansible.builtin.uri:
+    url: https://management.azure.com/metadata/endpoints?api-version=2020-06-01
+    method: GET
+    status_code: 200
+    validate_certs: true
+    timeout: 15
+    return_content: false
+  changed_when: false

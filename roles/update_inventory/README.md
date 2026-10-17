@@ -56,26 +56,6 @@ ansible-galaxy collection install -r requirements.yml --collections-path ./colle
 | --- | --- |
 | Azure | Yes |
 
-## Usage
-
-Include the role in a playbook that runs on the `azure_vms` group. The
-repository entry point is `playbooks/update_inventory.yml`:
-
-```yaml
----
-- name: Write Azure VM private IP to the inventory
-  hosts: azure_vms
-  connection: local
-  tags: update_inventory
-  roles:
-    - role: update_inventory
-```
-
-The role faces Azure and only writes a file on the controller, so
-`connection: local` is sufficient. It runs for every host of `azure_vms` and
-uses the variables of the host it runs for, for example
-`inventory/host_vars/testvm1.yml`.
-
 ## Configuration
 
 The recommended configuration is the inventory. The network interface is taken

@@ -1,0 +1,26 @@
+---
+- name: Verify Azure authentication and resource group read access
+  azure.azcollection.azure_rm_resourcegroup_info:
+    name: "{{ resource_group | default(omit, true) }}"
+  register: environment_tests_resource_groups
+  changed_when: false
+
+- name: Verify the configured resource group exists
+  ansible.builtin.assert:
+    that:
+      - >-
+        resource_group | length == 0 or
+        environment_tests_resource_groups.resourcegroups
+        | selectattr('name', 'equalto', resource_group)
+        | list | length > 0
+    fail_msg: >-
+      Azure access succeeded, but the configured resource group
+      '{{ resource_group }}' was not found in the active subscription.
+  when: resource_group | length > 0
+
+- name: Show Azure read-access test result
+  ansible.builtin.debug:
+    msg: >-
+      Azure authentication succeeded;
+      {{ environment_tests_resource_groups.resourcegroups | length }} resource group(s)
+      are visible in the active subscription.

@@ -58,27 +58,6 @@ ansible-galaxy collection install -r requirements.yml --collections-path ./colle
 | --- | --- |
 | Azure | Yes |
 
-## Usage
-
-Include the role in a playbook that targets the VM inventory group. The
-repository entry point is `playbooks/create_vm.yml`, which runs the
-`azure_resource_group` role first:
-
-```yaml
----
-- name: Provision Azure VM
-  hosts: azure_vms
-  connection: local
-  tags: create_vm
-  roles:
-    - role: azure_resource_group
-    - role: azure_linux_vm
-```
-
-The role faces Azure and runs on the Ansible controller, so
-`connection: local` is sufficient. Provisioning configuration comes from the
-inventory, for example `inventory/host_vars/testvm1.yml`.
-
 ## Configuration
 
 The recommended configuration is the inventory. The shared values are taken

@@ -1,0 +1,16 @@
+---
+- name: Test the controller Python and inventory configuration
+  ansible.builtin.import_tasks: controller.yml
+  tags: controller
+
+- name: Test HTTPS connectivity to Azure Resource Manager
+  ansible.builtin.import_tasks: network.yml
+  tags: network
+
+- name: Test Azure authentication and read access
+  ansible.builtin.import_tasks: azure_access.yml
+  tags: azure
+
+- name: Test connectivity to managed hosts
+  ansible.builtin.import_tasks: hosts.yml
+  tags: hosts

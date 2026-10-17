@@ -75,7 +75,7 @@ Never write new content in German or another language.
    ```
 
 5. Use `hosts: localhost` for plays whose role talks to the Azure API, and the
-   existing group (`azure_vms`) only when a role must target VMs.
+   existing group (`azure`) only when a role must target VMs.
 6. Do not inline configuration in playbooks unless the existing playbook does
    so; prefer inventory `group_vars`/`host_vars`.
 7. Keep a `tasks:` block only for playbooks that run ad-hoc diagnostic tasks
@@ -89,7 +89,7 @@ Never write new content in German or another language.
 - Shared variable names across roles: `resource_group`, `location`, `env`,
   `responsible`.
 - Put shared values in `inventory/group_vars/` (`all.yml`,
-  `azure_vms.yml`) and per-host values in `inventory/host_vars/<host>.yml`.
+  `azure.yml`) and per-host values in `inventory/host_vars/<host>.yml`.
 - Role variables follow the prefix rule in "Role variable naming": every
   variable a role defines is prefixed with the role name, while shared
   inventory names (`resource_group`, `location`, `env`, `responsible`,

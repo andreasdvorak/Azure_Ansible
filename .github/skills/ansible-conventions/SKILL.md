@@ -36,11 +36,14 @@ Never write new content in German or another language.
 5. Declare every input variable in `defaults/main.yml` with a safe empty
    default (`""`), and give every variable the role defines the role-name
    prefix required by `ansible-lint` (see "Role variable naming").
-6. Add `roles/<role_name>/README.md` by copying
+6. When `tasks/main.yml` dispatches to multiple task files with
+   `ansible.builtin.import_tasks`, assign a descriptive, distinct `tags`
+   value to each import so callers can select the relevant task group.
+7. Add `roles/<role_name>/README.md` by copying
    `references/role-readme-template.md` and replacing the placeholders. Keep
    every section; write "None" or "-" when it does not apply instead of
    deleting it.
-7. Keep the first documentation line free of `#` markers only where required;
+8. Keep the first documentation line free of `#` markers only where required;
    use standard Markdown headings.
 
 ## Azure modules
@@ -75,7 +78,7 @@ Never write new content in German or another language.
    ```
 
 5. Use `hosts: localhost` for plays whose role talks to the Azure API, and the
-   existing group (`azure_vms`) only when a role must target VMs.
+   existing group (`azure`) only when a role must target VMs.
 6. Do not inline configuration in playbooks unless the existing playbook does
    so; prefer inventory `group_vars`/`host_vars`.
 7. Keep a `tasks:` block only for playbooks that run ad-hoc diagnostic tasks
@@ -89,7 +92,7 @@ Never write new content in German or another language.
 - Shared variable names across roles: `resource_group`, `location`, `env`,
   `responsible`.
 - Put shared values in `inventory/group_vars/` (`all.yml`,
-  `azure_vms.yml`) and per-host values in `inventory/host_vars/<host>.yml`.
+  `azure.yml`) and per-host values in `inventory/host_vars/<host>.yml`.
 - Role variables follow the prefix rule in "Role variable naming": every
   variable a role defines is prefixed with the role name, while shared
   inventory names (`resource_group`, `location`, `env`, `responsible`,

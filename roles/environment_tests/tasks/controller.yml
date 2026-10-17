@@ -1,0 +1,43 @@
+---
+- name: Verify Ansible loaded the Azure VM inventory group
+  ansible.builtin.assert:
+    that:
+      - "'azure' in groups"
+    fail_msg: "The azure inventory group is missing or the configured inventory was not loaded."
+
+- name: Verify the Ansible Python environment
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - >-
+        import json, sys;
+        import ansible;
+        assert sys.prefix != sys.base_prefix, 'Ansible is not using a virtual environment';
+        print(json.dumps({
+          'executable': sys.executable,
+          'python_version': sys.version.split()[0],
+          'ansible_version': ansible.__version__,
+          'virtual_environment': sys.prefix
+        }))
+  register: environment_tests_python_check
+  changed_when: false
+
+- name: Show the verified Ansible Python environment
+  ansible.builtin.debug:
+    var: environment_tests_python_check.stdout
+
+- name: Verify Azure SDK availability
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - >-
+        import azure.identity, azure.mgmt.resource;
+        print('Azure SDK imports are available')
+  register: environment_tests_azure_sdk_check
+  changed_when: false
+
+- name: Show the Azure SDK check result
+  ansible.builtin.debug:
+    var: environment_tests_azure_sdk_check.stdout

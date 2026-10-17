@@ -39,7 +39,7 @@ List roles in the order they must run:
 ```yaml
 ---
 - name: Provision Azure resource group and VM
-  hosts: azure_vms
+  hosts: azure
   connection: local
   tags: create_vm
   roles:
@@ -64,7 +64,7 @@ When a role must run against VM hosts, target the existing group:
 ```yaml
 ---
 - name: Provision Azure VM
-  hosts: azure_vms
+  hosts: azure
   connection: local
   tags: create_vm
   roles:

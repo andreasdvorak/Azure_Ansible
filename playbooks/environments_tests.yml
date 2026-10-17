@@ -1,0 +1,7 @@
+---
+- name: Test the Ansible controller environment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - role: environment_tests

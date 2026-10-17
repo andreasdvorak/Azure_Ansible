@@ -64,26 +64,6 @@ ansible-galaxy collection install -r requirements.yml --collections-path ./colle
 | --- | --- |
 | Azure | Yes |
 
-## Usage
-
-Include the role in a playbook that connects locally to Azure. The repository
-entry point is `playbooks/<action>.yml`:
-
-```yaml
----
-- name: <play name>
-  hosts: localhost
-  connection: local
-  tags: <action>
-  roles:
-    - role: <role_name>
-```
-
-<description: The role faces Azure and runs on the Ansible controller, so
-`connection: local` is sufficient. Provisioning configuration comes from the
-inventory, for example `inventory/group_vars/azure_vms.yml` or
-`inventory/host_vars/<host>.yml`.>
-
 ## Configuration
 
 The recommended configuration is the inventory. The values are taken from the
