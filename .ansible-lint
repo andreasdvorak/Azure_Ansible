@@ -1,0 +1,10 @@
+---
+exclude_paths:
+  - .ansible/
+  - .git/
+  - .opencode/
+  - .vscode/
+  - .venv/
+  - build/
+  - collections/
+  - dist/

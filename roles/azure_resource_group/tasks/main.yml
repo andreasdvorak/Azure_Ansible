@@ -4,9 +4,12 @@
     that:
       - >-
         item is mapping and
-        item.name is defined and item.name is string and item.name | trim | length > 0 and
-        item.env is defined and item.env is string and item.env | trim | length > 0 and
-        item.responsible is defined and item.responsible is string and item.responsible | trim | length > 0
+        item.name is defined and item.name is string and
+        item.name | trim | length > 0 and
+        item.env is defined and item.env is string and
+        item.env | trim | length > 0 and
+        item.responsible is defined and item.responsible is string and
+        item.responsible | trim | length > 0
     fail_msg: >-
       Each resource_groups entry must be a mapping with non-empty string values
       for name, env, and responsible.
