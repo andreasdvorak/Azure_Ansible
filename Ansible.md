@@ -137,6 +137,12 @@ the exit code and the individual violations stay, but the rule summary is not
 printed. Do not run a bare `ansible-lint` instead: `inventory/` is in
 `.gitignore`, so its `group_vars` and `host_vars` would no longer be checked.
 
+## pre-commit
+
+To do an automatic ansible-lint before the commit you need to rename the hook file
+
+mv .git/hooks/pre-commit.sample to .git/hooks/pre-commit
+
 ## Shellcheck
 Please check the Bash scripts with shellcheck
 ```bash
