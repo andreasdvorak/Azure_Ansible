@@ -191,6 +191,25 @@ For Windows
 ansible windows -m win_ping
 ```
 
+## Verify the Ansible installation
+
+Run the environment checker from the repository root:
+
+```bash
+python3 scripts/check_environment.py
+```
+
+The script uses `.venv` when it is available. It checks the installed Python
+package and Ansible collection versions against `requirements.txt` and
+`requirements.yml`, verifies Python package dependencies, runs the controller,
+HTTPS, and Azure read-access checks from `playbooks/environments_tests.yml`,
+checks that the Azure CLI is installed and can obtain an Azure Resource Manager
+access token, and tests SSH connectivity and remote Python for the `azure`
+inventory group. Sign in to the Azure CLI first with `az login`. Azure Ansible
+checks require valid credentials in `.azure/credentials` or the `AZURE_*`
+environment variables. A failed SSH check can indicate that a host is
+unreachable or that its inventory connection settings are incomplete.
+
 ## Show facts
 If you want to see the facts of a server run this:
 
