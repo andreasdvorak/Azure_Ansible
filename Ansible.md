@@ -156,7 +156,7 @@ find . -type f -name "*.sh" -exec shellcheck {} +
 
 as a graph
 ```bash
-ansible-inventory [-i inventory/hosts_provision.ini] --graph
+ansible-inventory --graph
 ```
 
 as a list
@@ -220,7 +220,7 @@ ansible <inventory_hostname>  -m setup
 ## Usage of a tags
 Show all tags and tasks
 ```bash
-ansible-playbook [-i inventory/hosts_provisioning.ini] playbooks/<playbook> --list-tasks
+ansible-playbook playbooks/<playbook> --list-tasks
 ```
 
 If you just want to run the role gitlab from the playbook gitlab-servers use the tags option:
@@ -231,5 +231,5 @@ If you just want to run the role gitlab from the playbook gitlab-servers use the
 ## Limit run to a hostname
 Limit for host name
 ```bash
-ansible-playbook [-i inventory/hosts_provisioning.ini] playbooks/<playbook> --limit <hostname>
+ansible-playbook playbooks/<playbook> --limit <hostname>
 ```

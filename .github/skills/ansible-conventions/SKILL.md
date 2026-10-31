@@ -10,9 +10,9 @@ existing roles (`azure_linux_vm`, `azure_resource_group`, `update_inventory`) an
 
 ## Language
 
-English is the language for everything in this Ansible project: task names,
-variable names, READMEs, playbook and role comments, and commit messages.
-Never write new content in German or another language.
+Write repository content in English, including task names, variable names,
+READMEs, playbook and role comments, and commit messages. This applies to
+project files, not chat responses; respond to the user in the language they use.
 
 ## Repository layout
 
