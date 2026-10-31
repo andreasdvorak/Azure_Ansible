@@ -1,3 +1,6 @@
 ---
-# Every entry must include a name and non-empty env/responsible tags.
+# Entries require name and non-empty env/responsible values; tags are optional.
 resource_groups: []  # noqa: var-naming[no-role-prefix]
+
+azure_resource_group_tags:
+  "Ansible managed": "true"

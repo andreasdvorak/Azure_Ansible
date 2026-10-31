@@ -1,0 +1,14 @@
+---
+# Shared inputs keep their inventory names.
+resource_group: ""  # noqa: var-naming[no-role-prefix]
+location: ""  # noqa: var-naming[no-role-prefix]
+env: ""  # noqa: var-naming[no-role-prefix]
+responsible: ""  # noqa: var-naming[no-role-prefix]
+
+# Network values are shared with the azure_linux_vm role.
+azure_network_virtual_network_name: ""
+azure_network_virtual_network_address_prefixes: ""
+azure_network_subnet_name: ""
+azure_network_subnet_address_prefix: ""
+azure_network_tags:
+  "Ansible managed": "true"

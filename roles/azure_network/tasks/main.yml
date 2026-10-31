@@ -1,0 +1,38 @@
+---
+- name: Validate required Azure network configuration
+  ansible.builtin.assert:
+    that:
+      - resource_group is string and resource_group | trim | length > 0
+      - location is string and location | trim | length > 0
+      - env is string and env | trim | length > 0
+      - responsible is string and responsible | trim | length > 0
+      - >-
+        azure_network_virtual_network_name is string and
+        azure_network_virtual_network_name | trim | length > 0
+      - >-
+        azure_network_virtual_network_address_prefixes is string and
+        azure_network_virtual_network_address_prefixes | trim | length > 0
+      - >-
+        azure_network_subnet_name is string and
+        azure_network_subnet_name | trim | length > 0
+      - >-
+        azure_network_subnet_address_prefix is string and
+        azure_network_subnet_address_prefix | trim | length > 0
+      - azure_network_tags is mapping
+    fail_msg: >-
+      Azure network names, address prefixes, location, resource group, and tag
+      values must be valid and non-empty.
+  tags:
+    - validate_network_configuration
+    - create_network
+    - add_tags_to_network
+
+- name: Create Azure virtual network and subnet
+  ansible.builtin.import_tasks: create_network.yml
+  tags:
+    - create_network
+
+- name: Add tags to Azure virtual network
+  ansible.builtin.import_tasks: add_tags_to_network.yml
+  tags:
+    - add_tags_to_network

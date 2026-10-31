@@ -1,0 +1,14 @@
+---
+- name: Create resource group
+  azure.azcollection.azure_rm_resourcegroup:
+    name: "{{ item.name }}"
+    location: "{{ location }}"
+    state: present
+    tags: >-
+      {{
+        item.tags | default({}) | combine(azure_resource_group_tags) |
+        combine({'environment': item.env, 'responsible': item.responsible})
+      }}
+  loop: "{{ resource_groups }}"
+  loop_control:
+    label: "{{ item.name }}"

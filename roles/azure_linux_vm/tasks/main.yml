@@ -1,61 +1,65 @@
 ---
-- name: Create virtual network
-  azure.azcollection.azure_rm_virtualnetwork:
-    resource_group: "{{ resource_group }}"
-    name: "{{ azure_linux_vm_virtual_network_name }}"
-    address_prefixes: "{{ azure_linux_vm_virtual_network_address_prefixes }}"
-    location: "{{ location }}"
-    tags:
-      environment: "{{ env }}"
-      responsible: "{{ responsible }}"
+- name: Validate required virtual machine configuration
+  ansible.builtin.assert:
+    that:
+      - resource_group is string and resource_group | trim | length > 0
+      - location is string and location | trim | length > 0
+      - env is string and env | trim | length > 0
+      - responsible is string and responsible | trim | length > 0
+      - azure_linux_vm_tags is mapping
+      - >-
+        azure_network_virtual_network_name is defined and
+        azure_network_virtual_network_name is string and
+        azure_network_virtual_network_name | trim | length > 0
+      - >-
+        azure_network_subnet_name is defined and
+        azure_network_subnet_name is string and
+        azure_network_subnet_name | trim | length > 0
+      - >-
+        azure_linux_vm_name is string and
+        azure_linux_vm_name | trim | length > 0
+      - >-
+        azure_linux_vm_size is string and
+        azure_linux_vm_size | trim | length > 0
+      - >-
+        azure_linux_vm_admin_username is string and
+        azure_linux_vm_admin_username | trim | length > 0
+      - >-
+        azure_linux_vm_admin_password is string and
+        azure_linux_vm_admin_password | length > 0
+      - >-
+        azure_linux_vm_os_offer is string and
+        azure_linux_vm_os_offer | trim | length > 0
+      - >-
+        azure_linux_vm_os_sku is string and
+        azure_linux_vm_os_sku | trim | length > 0
+      - >-
+        azure_linux_vm_publisher is string and
+        azure_linux_vm_publisher | trim | length > 0
+      - >-
+        azure_linux_vm_managed_disk_type is string and
+        azure_linux_vm_managed_disk_type | trim | length > 0
+      - >-
+        azure_linux_vm_public_ip_name is string and
+        azure_linux_vm_public_ip_name | trim | length > 0
+      - networkinterface_name is string and networkinterface_name | trim | length > 0
+      - >-
+        azure_linux_vm_networkinterface_ip_configurations_name is string and
+        azure_linux_vm_networkinterface_ip_configurations_name | trim | length > 0
+    fail_msg: >-
+      All required resource group, location, tag, VM, and network configuration
+      values must be non-empty strings.
+  tags:
+    - validate_vm_configuration
+    - create_vm
+    - add_tags_to_vm
 
-- name: Create subnet
-  azure.azcollection.azure_rm_subnet:
-    resource_group: "{{ resource_group }}"
-    name: "{{ azure_linux_vm_subnet_name }}"
-    address_prefix: "{{ azure_linux_vm_virtual_network_address_prefixes }}"
-    virtual_network: "{{ azure_linux_vm_virtual_network_name }}"
+- name: Create virtual machine infrastructure
+  ansible.builtin.import_tasks: create_vm.yml
+  tags:
+    - create_vm
 
-- name: Create public IP
-  azure.azcollection.azure_rm_publicipaddress:
-    resource_group: "{{ resource_group }}"
-    allocation_method: Static
-    name: "{{ azure_linux_vm_public_ip_name }}"
-    location: "{{ location }}"
-    sku: Standard
-    tags:
-      environment: "{{ env }}"
-      responsible: "{{ responsible }}"
-
-- name: Create network interface
-  azure.azcollection.azure_rm_networkinterface:
-    resource_group: "{{ resource_group }}"
-    name: "{{ networkinterface_name }}"
-    location: "{{ location }}"
-    subnet_name: "{{ azure_linux_vm_subnet_name }}"
-    virtual_network_name: "{{ azure_linux_vm_virtual_network_name }}"
-    tags:
-      environment: "{{ env }}"
-      responsible: "{{ responsible }}"
-    ip_configurations:
-      - name: "{{ azure_linux_vm_networkinterface_ip_configurations_name }}"
-        public_ip_address_name: "{{ azure_linux_vm_public_ip_name }}"
-
-- name: Create Linux VM
-  azure.azcollection.azure_rm_virtualmachine:
-    resource_group: "{{ resource_group }}"
-    name: "{{ azure_linux_vm_name }}"
-    location: "{{ location }}"
-    vm_size: "{{ azure_linux_vm_size }}"
-    admin_username: "{{ azure_linux_vm_admin_username }}"
-    admin_password: "{{ azure_linux_vm_admin_password }}"
-    network_interfaces: "{{ networkinterface_name }}"
-    image:
-      offer: "{{ azure_linux_vm_os_offer }}"
-      publisher: "{{ azure_linux_vm_publisher }}"
-      sku: "{{ azure_linux_vm_os_sku }}"
-      version: "latest"
-    managed_disk_type: "{{ azure_linux_vm_managed_disk_type }}"
-    tags:
-      environment: "{{ env }}"
-      responsible: "{{ responsible }}"
+- name: Add tags to virtual machine infrastructure
+  ansible.builtin.import_tasks: add_tags_to_vm.yml
+  tags:
+    - add_tags_to_vm

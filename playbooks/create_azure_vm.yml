@@ -2,8 +2,8 @@
 - name: Provision Azure VM
   hosts: azure
   connection: local
-  tags: create_vm
   roles:
     - role: azure_resource_group
+    - role: azure_network
     - role: azure_linux_vm
     - role: update_inventory

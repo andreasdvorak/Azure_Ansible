@@ -6,11 +6,15 @@ Creates the Azure resource groups listed in the inventory.
 
 - Creates every Azure resource group listed in `resource_groups`, in a chosen
   Azure region.
+- Creates resource groups and applies tags in separate, independently
+  selectable task groups.
 - Applies `environment` and `responsible` tags for ownership and lifecycle
-  tracking.
+  tracking, the `"Ansible managed": "true"` marker, plus optional custom Azure
+  tags for each resource group.
 - Is idempotent: an existing resource group is left in place and its tags are
   updated to match the configured values.
 - Can be run before other Azure roles to prepare the resource groups they use.
+- Supports Ansible tags to run resource group validation or creation selectively.
 
 ## Dependencies
 
@@ -58,25 +62,33 @@ ansible-galaxy collection install -r requirements.yml --collections-path ./colle
 The recommended configuration is the inventory. The resource groups are taken
 from `resource_groups` in `inventory/group_vars/all.yml`; the region comes from
 the shared `location` variable. Each list entry is a mapping with the group
-`name` and its required, non-empty `env` and `responsible` tags:
+`name` and its required, non-empty `env` and `responsible` values. Add an
+optional `tags` mapping for additional Azure tags:
 
 ```yaml
 location: "westeurope"
-env: "development"
-responsible: "devops-team"
 
 resource_groups:
   - name: "rg-dev"
     env: "development"
     responsible: "devops-team"
+    tags:
+      costCenter: "12345"
+      owner: "platform-team"
   - name: "rg-test"
     env: "development"
     responsible: "devops-team"
 ```
 
 Each entry creates one resource group, so adding an entry to the list is enough
-to have the next run create it. Entries without a name or either tag, or with
-empty values, fail validation before any resource group is created.
+to have the next run create it. Entries without a name or either required value,
+or with empty values, fail validation before any resource group is created.
+Optional `tags` must be a mapping. The role always sets `environment` from
+`env`, `responsible` from `responsible`, and `"Ansible managed": "true"`; these
+role-managed tags take precedence over matching keys in the optional mapping.
+Add default tags shared by all resource groups to the
+`azure_resource_group_tags` mapping in
+`roles/azure_resource_group/defaults/main.yml`; no task changes are needed.
 
 The `azure_linux_vm` role also uses `env` and `responsible` to tag VM
 resources, but its values are configured separately from each resource group's
@@ -88,14 +100,15 @@ the `name` of one of the entries in `resource_groups`.
 
 | Role variable | Default | Description |
 | --- | --- | --- |
-| `resource_groups` | `[]` | List of resource groups to create. Each entry must be a mapping with non-empty `name`, `env`, and `responsible` string values. Required. |
+| `resource_groups` | `[]` | List of resource groups to create. Each entry must include non-empty `name`, `env`, and `responsible` string values, and may include a `tags` mapping of additional Azure tags. |
+| `azure_resource_group_tags` | `{"Ansible managed": "true"}` | Default Azure tags applied to every resource group. Add shared tags here; per-group `tags` may add extra keys, while defaults take precedence for duplicate keys. |
 | `location` | `""` | Azure region for every created resource group, for example `westeurope`. Required. |
 
 Role variables can also be overridden directly in a playbook or on the command
 line, for example:
 
 ```bash
-ansible-playbook playbooks/create_resource_group.yml \
+ansible-playbook playbooks/create_azure_resource_group.yml \
   -e '{"resource_groups": [{"name": "rg-dev", "env": "development", "responsible": "devops-team"}]}' \
   -e location=westeurope
 ```
@@ -113,13 +126,13 @@ Ansible Vault workflow if required.
 
 ## Tags
 
-Available tags:
+Available Ansible tags:
 
 | Tag | Purpose |
 |-------|---------|
-| `create_resource_group` | Playbook-level tag on `playbooks/create_resource_group.yml`. Runs the role. |
-
-No role-specific task tags are defined inside the role.
+| `create_resource_group` | Validates the configuration and creates the configured resource groups without setting tags. |
+| `add_tags_to_resource_group` | Validates the configuration and applies the configured Azure tags to the resource groups. |
+| `validate_resource_group` | Runs only the resource group configuration validation task. Use with `--tags validate_resource_group`. |
 
 ## Known Limitations
 
@@ -129,7 +142,9 @@ No role-specific task tags are defined inside the role.
 - The role does not validate that the `resource_group` value of a VM host is
   one of the listed names.
 - Every resource group entry must include non-empty `env` and `responsible`
-  tags; shared tag fallbacks are not supported.
+  values; shared tag fallbacks are not supported.
+- Custom Azure tags must be provided as a mapping; the role-managed
+  `environment` and `responsible` values take precedence.
 - The role does not create or configure the Azure subscription, credentials, or
   role assignments.
 - Changing `location` for an existing resource group has no effect: an Azure
@@ -140,13 +155,30 @@ No role-specific task tags are defined inside the role.
 After configuring the inventory, run the repository playbook:
 
 ```bash
-ansible-playbook playbooks/create_resource_group.yml
+ansible-playbook playbooks/create_azure_resource_group.yml
 ```
+
+Create the resource groups or manage their tags independently with Ansible tags:
+
+```bash
+# Validate resource group configuration without contacting Azure
+ansible-playbook playbooks/create_azure_resource_group.yml --tags validate_resource_group
+
+# Validate and create resource groups without setting tags
+ansible-playbook playbooks/create_azure_resource_group.yml --tags create_resource_group
+
+# Validate and apply resource group tags
+ansible-playbook playbooks/create_azure_resource_group.yml --tags add_tags_to_resource_group
+```
+
+Running the playbook without a tag creates the resource groups and then applies
+their tags. Running only `add_tags_to_resource_group` also ensures the
+resource groups exist, because the Azure module uses `state: present`.
 
 To validate the playbook without contacting Azure, run:
 
 ```bash
-ansible-playbook --syntax-check playbooks/create_resource_group.yml
+ansible-playbook --syntax-check playbooks/create_azure_resource_group.yml
 ```
 
 ## Deletion

@@ -1,0 +1,14 @@
+---
+- name: Create virtual network
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ resource_group }}"
+    name: "{{ azure_network_virtual_network_name }}"
+    address_prefixes: "{{ azure_network_virtual_network_address_prefixes }}"
+    location: "{{ location }}"
+
+- name: Create subnet
+  azure.azcollection.azure_rm_subnet:
+    resource_group: "{{ resource_group }}"
+    name: "{{ azure_network_subnet_name }}"
+    address_prefix: "{{ azure_network_subnet_address_prefix }}"
+    virtual_network: "{{ azure_network_virtual_network_name }}"

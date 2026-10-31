@@ -1,19 +1,21 @@
 # Ansible Role: azure_linux_vm
 
-Creates a virtual network, a subnet, a public IP, a network interface, and a
-Linux virtual machine in an existing Azure resource group.
+Creates a public IP, network interface, and Linux virtual machine in an
+existing Azure resource group and virtual network.
 
 ### Features
 
-- Creates a virtual network with a configurable address prefix and a subnet
-  inside it.
 - Creates a static public IP address with the `Standard` SKU.
 - Creates a network interface with a single IP configuration that is attached
   to the public IP.
 - Creates a Linux virtual machine from a configurable image, size, and admin
   credentials.
-- Tags the virtual network, public IP, network interface, and VM with
-  `environment` and `responsible` for ownership and lifecycle tracking.
+- Tags the public IP, network interface, and VM with
+  `environment`, `responsible`, and `"Ansible managed": "true"` for ownership
+  and lifecycle tracking.
+- Uses the virtual network and subnet created by the `azure_network` role.
+- Validates required configuration, creates resources, and applies tags in
+  independently selectable task groups.
 - Is idempotent: existing resources are left in place and updated to match the
   configured values.
 
@@ -24,6 +26,7 @@ Linux virtual machine in an existing Azure resource group.
 | Role | Required | Purpose |
 | --- | --- | --- |
 | `azure_resource_group` | Yes | Creates the resource group that holds the VM and its network resources. It must run before this role. |
+| `azure_network` | Yes | Creates the virtual network and subnet used by the VM network interface. It must run before this role. |
 
 ### Optional Roles
 
@@ -61,8 +64,9 @@ ansible-galaxy collection install -r requirements.yml --collections-path ./colle
 ## Configuration
 
 The recommended configuration is the inventory. The shared values are taken
-from `resource_group`, `location`, `env`, and `responsible`; the VM and network
-resources are taken from the role-specific variables:
+from `resource_group`, `location`, `env`, and `responsible`; VM-specific values
+are taken from the role-specific variables. The network names are configured
+for the `azure_network` role:
 
 ```yaml
 resource_group: "rg-dev"
@@ -79,18 +83,26 @@ azure_linux_vm_os_sku: "22_04-lts-gen2"
 azure_linux_vm_publisher: "Canonical"
 azure_linux_vm_managed_disk_type: "Standard_LRS"
 
-azure_linux_vm_virtual_network_name: "vnet-dev"
-azure_linux_vm_virtual_network_address_prefixes: "10.0.1.0/24"
-azure_linux_vm_subnet_name: "subnet-dev"
 azure_linux_vm_public_ip_name: "pip-dev"
 
 networkinterface_name: "mynic"
 azure_linux_vm_networkinterface_ip_configurations_name: "ipconfig1"
+
+azure_network_virtual_network_name: "vnet-dev"
+azure_network_subnet_name: "subnet-dev"
+
+azure_linux_vm_tags:
+  "Ansible managed": "true"
+  costCenter: "12345"
 ```
 
-The `env` and `responsible` values here tag VM resources. The
-`azure_resource_group` role gets its required tags from each entry in
-`resource_groups`; those values are configured separately.
+The `env` and `responsible` values here tag VM resources. Every VM resource that
+supports Azure tags receives the tags from `azure_linux_vm_tags`; the role
+automatically adds or overrides `environment` and `responsible` using the
+shared values above. Add custom tags to the `azure_linux_vm_tags` mapping in
+`roles/azure_linux_vm/defaults/main.yml` without changing the task files. The
+`azure_network` role owns the virtual network and subnet, and gets its network
+values from `azure_network_*` variables.
 
 | Role variable | Default | Description |
 | --- | --- | --- |
@@ -107,17 +119,15 @@ The `env` and `responsible` values here tag VM resources. The
 | `azure_linux_vm_os_sku` | `""` | Image SKU, for example `22_04-lts-gen2`. Required. |
 | `azure_linux_vm_publisher` | `""` | Image publisher, for example `Canonical`. Required. |
 | `azure_linux_vm_managed_disk_type` | `""` | Managed disk type of the OS disk, for example `Standard_LRS`. |
-| `azure_linux_vm_virtual_network_name` | `""` | Name of the created virtual network. Required. |
-| `azure_linux_vm_virtual_network_address_prefixes` | `""` | Address prefix of the virtual network and the subnet, for example `10.0.1.0/24`. Required. |
-| `azure_linux_vm_subnet_name` | `""` | Name of the created subnet. Required. |
 | `azure_linux_vm_public_ip_name` | `""` | Name of the created public IP address. Required. |
 | `azure_linux_vm_networkinterface_ip_configurations_name` | `""` | Name of the IP configuration of the network interface. Required. |
+| `azure_linux_vm_tags` | `{"Ansible managed": "true"}` | Additional Azure tags applied to the public IP, network interface, and VM. `environment` and `responsible` are always set from the shared inputs. |
 
 Role variables can also be overridden directly in a playbook or on the command
 line, for example:
 
 ```bash
-ansible-playbook playbooks/create_vm.yml \
+ansible-playbook playbooks/create_azure_vm.yml \
   -e resource_group=rg-dev \
   -e location=westeurope \
   -e azure_linux_vm_name=testvm1
@@ -141,18 +151,16 @@ Available tags:
 
 | Tag | Purpose |
 |-------|---------|
-| `create_vm` | Playbook-level tag on `playbooks/create_vm.yml`. Runs the `azure_resource_group` and `azure_linux_vm` roles. |
-
-No role-specific task tags are defined inside the role.
+| `validate_vm_configuration` | Validates required VM and network configuration without contacting Azure. |
+| `create_vm` | Validates configuration and creates the public IP, network interface, and VM, without applying Azure tags. |
+| `add_tags_to_vm` | Validates configuration and applies the configured Azure tags to the public IP, network interface, and VM. |
 
 ## Known Limitations
 
-- The role creates a single VM and one set of network resources per run. To
+- The role creates a single VM, public IP, and network interface per run. To
   create several, include it multiple times with different variable values.
-- The subnet reuses the virtual network address prefix, so it always spans the
-  whole virtual network address space.
 - The public IP address is always static and uses the `Standard` SKU.
-- The subnet cannot be tagged because `azure_rm_subnet` does not support tags.
+- The virtual network and subnet are managed by the `azure_network` role.
 - The role does not delete resources and does not manage credentials or role
   assignments.
 - The role does not connect to the VM over SSH and does not configure the
@@ -163,13 +171,30 @@ No role-specific task tags are defined inside the role.
 After configuring the inventory, run the repository playbook:
 
 ```bash
-ansible-playbook -i inventory/hosts.ini playbooks/create_vm.yml
+ansible-playbook playbooks/create_azure_vm.yml
 ```
+
+Run the VM role phases independently with Ansible tags:
+
+```bash
+# Validate the VM configuration without contacting Azure
+ansible-playbook playbooks/create_azure_vm.yml --tags validate_vm_configuration
+
+# Validate and create the VM resources (the network must already exist)
+ansible-playbook playbooks/create_azure_vm.yml --tags create_vm
+
+# Validate and apply tags to the supported Azure resources
+ansible-playbook playbooks/create_azure_vm.yml --tags add_tags_to_vm
+```
+
+Running the playbook without a tag creates the resource group, network, and VM
+in order, then applies their tags. The subnet does not receive tags because the
+Azure subnet module does not support them.
 
 To validate the playbook without contacting Azure, run:
 
 ```bash
-ansible-playbook -i inventory/hosts.ini --syntax-check playbooks/create_vm.yml
+ansible-playbook -i inventory/hosts.ini --syntax-check playbooks/create_azure_vm.yml
 ```
 
 ## Deletion

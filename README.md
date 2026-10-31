@@ -1,5 +1,6 @@
 [![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
 [![Ansible](https://img.shields.io/badge/Ansible-EE0000?logo=ansible&logoColor=white)](https://www.ansible.com/)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 
 # Azure_Ansible
 

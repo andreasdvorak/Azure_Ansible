@@ -33,14 +33,26 @@ project files, not chat responses; respond to the user in the language they use.
 3. Create `roles/<role_name>/tasks/main.yml` and
    `roles/<role_name>/defaults/main.yml`.
 4. Every task starts with a clear, descriptive `name`.
-5. Declare every input variable in `defaults/main.yml` with a safe empty
+5. Every role validates its prerequisites before performing any operation that
+   changes state or contacts Azure. Put a named `ansible.builtin.assert` task
+   first in `tasks/main.yml`; validate required inputs for type and non-empty
+   values, as well as required mappings or relationships. Keep validation
+   local: it must not make Azure API calls.
+6. If the role supports action tags, make the validation run before each
+   selected action too. Give the validation task the action tags used by the
+   imported task groups, plus a dedicated validation-only tag; do not let
+   `--tags <action>` bypass prerequisite checks.
+7. Declare every input variable in `defaults/main.yml` with a safe empty
    default (`""`), and give every variable the role defines the role-name
    prefix required by `ansible-lint` (see "Role variable naming").
-6. Add `roles/<role_name>/README.md` by copying
+8. When `tasks/main.yml` dispatches to multiple task files with
+   `ansible.builtin.import_tasks`, assign a descriptive, distinct `tags`
+   value to each import so callers can select the relevant task group.
+9. Add `roles/<role_name>/README.md` by copying
    `references/role-readme-template.md` and replacing the placeholders. Keep
    every section; write "None" or "-" when it does not apply instead of
    deleting it.
-7. Keep the first documentation line free of `#` markers only where required;
+10. Keep the first documentation line free of `#` markers only where required;
    use standard Markdown headings.
 
 ## Azure modules

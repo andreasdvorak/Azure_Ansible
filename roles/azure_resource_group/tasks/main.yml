@@ -9,21 +9,26 @@
         item.env is defined and item.env is string and
         item.env | trim | length > 0 and
         item.responsible is defined and item.responsible is string and
-        item.responsible | trim | length > 0
+        item.responsible | trim | length > 0 and
+        (item.tags is not defined or item.tags is mapping) and
+        azure_resource_group_tags is mapping
     fail_msg: >-
       Each resource_groups entry must be a mapping with non-empty string values
-      for name, env, and responsible.
+      for name, env, and responsible. Optional tags must be a mapping.
   loop: "{{ resource_groups }}"
   loop_control:
     label: "{{ item.name | default(item) }}"
+  tags:
+    - validate_resource_group
+    - create_resource_group
+    - add_tags_to_resource_group
 
-- name: Create resource group
-  azure.azcollection.azure_rm_resourcegroup:
-    name: "{{ item.name }}"
-    location: "{{ location }}"
-    tags:
-      environment: "{{ item.env }}"
-      responsible: "{{ item.responsible }}"
-  loop: "{{ resource_groups }}"
-  loop_control:
-    label: "{{ item.name }}"
+- name: Create resource groups
+  ansible.builtin.import_tasks: create_resource_group.yml
+  tags:
+    - create_resource_group
+
+- name: Add tags to resource groups
+  ansible.builtin.import_tasks: add_tags_to_resource_group.yml
+  tags:
+    - add_tags_to_resource_group

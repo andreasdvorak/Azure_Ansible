@@ -20,7 +20,17 @@ Optional additions, only when the role needs them: `vars/main.yml`,
 
 - Role and variable names in snake_case.
 - `tasks/main.yml` starts with `---`.
-- Each task has a descriptive `name`.
+- Every task has a descriptive `name`.
+- The first task in `tasks/main.yml` validates all prerequisites with
+  `ansible.builtin.assert` before any state change or Azure API call. Validate
+  required inputs (including type and non-empty values), required mappings,
+  and relevant relationships. Validation itself must not contact Azure.
+- If tasks are selectable by action tags, tag the validation task with every
+  action tag and a dedicated validation-only tag so selecting an action cannot
+  bypass prerequisite validation.
+- `tasks/main.yml` dispatches to action task files only after validation.
+  Assign each `ansible.builtin.import_tasks` a descriptive, distinct action
+  tag.
 - Azure modules use the full name `azure.azcollection.azure_rm_<resource>`.
 - Resource tags use `environment: "{{ env }}"` and
   `responsible: "{{ responsible }}"`.
@@ -34,22 +44,29 @@ Optional additions, only when the role needs them: `vars/main.yml`,
 
 ```yaml
 ---
-- name: Create resource group
-  azure.azcollection.azure_rm_resourcegroup:
-    name: "{{ resource_group }}"
-    location: "{{ location }}"
-    tags:
-      environment: "{{ env }}"
-      responsible: "{{ responsible }}"
+- name: Validate required example role configuration
+  ansible.builtin.assert:
+    that:
+      - resource_group is string
+      - resource_group | trim | length > 0
+      - location is string
+      - location | trim | length > 0
+    fail_msg: >-
+      resource_group and location must be non-empty strings.
+  tags:
+    - validate_example_role
+    - create_example_role
+    - tag_example_role
 
-- name: Look up something
-  azure.azcollection.azure_rm_example_info:
-    resource_group: "{{ resource_group }}"
-  register: example_role_lookup_result
+- name: Create example resources
+  ansible.builtin.import_tasks: create.yml
+  tags:
+    - create_example_role
 
-- name: Remember the result
-  ansible.builtin.set_fact:
-    example_role_result_id: "{{ example_role_lookup_result.id }}"
+- name: Add tags to example resources
+  ansible.builtin.import_tasks: add_tags.yml
+  tags:
+    - tag_example_role
 ```
 
 ## Example `defaults/main.yml`
