@@ -25,7 +25,10 @@
     location: "{{ location }}"
     vm_size: "{{ azure_linux_vm_size }}"
     admin_username: "{{ azure_linux_vm_admin_username }}"
-    admin_password: "{{ azure_linux_vm_admin_password }}"
+    ssh_password_enabled: false
+    ssh_public_keys:
+      - path: "/home/{{ azure_linux_vm_admin_username }}/.ssh/authorized_keys"
+        key_data: "{{ lookup('ansible.builtin.file', azure_linux_vm_ssh_public_key_file) }}"
     network_interfaces: "{{ networkinterface_name }}"
     image:
       offer: "{{ azure_linux_vm_os_offer }}"

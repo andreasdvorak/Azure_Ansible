@@ -82,37 +82,23 @@ To run a playbook that uses a role with secrets you need this parameter
 Get the content from somebody who is already using Ansible.
 
 ## Ansible key
-If you want to use run Ansible the public key needs to be added in the file <ansible_user>/.ssh/authorized_keys.
+The Azure VMs use the `ansible` account. Its public key is installed as
+`/home/ansible/.ssh/authorized_keys` when the VM is created. The account name is
+set for the `azure` inventory group in `inventory/group_vars/azure.yml`.
 
-The ansible_user can be ansible in older installations or the default user that AWS creates in the EC2 instance. The user name can be found in the files inventory/group_vars/<os>.yml.
+Keep the matching SSH key pair in the repository's ignored `.ssh/` directory:
 
-If you use the default user of that AWS creates follow this:
-* Add the private key file key.pem to ~/.ssh/key.pem and do
+- `.ssh/ansible` is the private key. Keep it secret and restrict its permissions:
 
-```bash
-chmod 600 ~/.ssh/key.pem
-```
+  ```bash
+  chmod 600 .ssh/ansible
+  ```
 
-If you use the "ansible" user follow this:
-* Add you public key to the file roles/user/files/public_keys/ansible. Please make sure that your id is at the end of the string.
-* create pull request
-* someone else needs to run Ansible to added your key
-```bash
-ansible-playbook playbook/user.yml
-```
+- `.ssh/ansible.pub` is the public key used when creating the VM. Do not share
+  or upload the private key.
 
-Now you can run Ansible from your host.
-In the inventory file hosts the ansible user is set to "ansible". Currently we run ansible with our own user. The option is
-```
--e ansible_user=<username>
-```
-
-Furthermore you canset your ssh private key. The option is
-```
--e ansible_ssh_private_key_file=<path and file of privatkey>
-```
-
-Default is ~/.ssh/key.pem
+The public key must match the private key used by the controller. If you replace
+the key pair, recreate the VM or otherwise install the new public key on it.
 
 ## Windows
 ansible-vault encrypt_string 'xxxxxxxxxxxx' --name ansible_password

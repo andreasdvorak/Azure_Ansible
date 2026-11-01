@@ -9,7 +9,8 @@ existing Azure resource group and virtual network.
 - Creates a network interface with a single IP configuration that is attached
   to the public IP.
 - Creates a Linux virtual machine from a configurable image, size, and admin
-  credentials.
+  username and SSH public key, with SSH password authentication disabled.
+- Uses the Azure-provisioned admin account, which has `sudo` privileges.
 - Tags the public IP, network interface, and VM with
   `environment`, `responsible`, and `"Ansible managed": "true"` for ownership
   and lifecycle tracking.
@@ -76,8 +77,8 @@ responsible: "devops-team"
 
 azure_linux_vm_name: "testvm1"
 azure_linux_vm_size: "Standard_B1s"
-azure_linux_vm_admin_username: "azureuser"
-azure_linux_vm_admin_password: "<admin-password>"
+azure_linux_vm_admin_username: "ansible"
+azure_linux_vm_ssh_public_key_file: "{{ inventory_dir }}/../.ssh/ansible.pub"
 azure_linux_vm_os_offer: "0001-com-ubuntu-server-jammy"
 azure_linux_vm_os_sku: "22_04-lts-gen2"
 azure_linux_vm_publisher: "Canonical"
@@ -113,8 +114,8 @@ values from `azure_network_*` variables.
 | `networkinterface_name` | `""` | Shared input: name of the created network interface. Required. |
 | `azure_linux_vm_name` | `""` | Name of the Linux virtual machine. Required. |
 | `azure_linux_vm_size` | `""` | Azure VM size, for example `Standard_B1s`. Required. |
-| `azure_linux_vm_admin_username` | `""` | Admin user name for the VM. Required. |
-| `azure_linux_vm_admin_password` | `""` | Admin password for the VM. Treat it as a secret and store it in a vault. Required. |
+| `azure_linux_vm_admin_username` | `""` | Admin user name for the VM. Azure creates this user with `sudo` privileges. Required. |
+| `azure_linux_vm_ssh_public_key_file` | `""` | Controller-side path to the SSH public key installed for the admin user. Required. |
 | `azure_linux_vm_os_offer` | `""` | Image offer, for example `0001-com-ubuntu-server-jammy`. Required. |
 | `azure_linux_vm_os_sku` | `""` | Image SKU, for example `22_04-lts-gen2`. Required. |
 | `azure_linux_vm_publisher` | `""` | Image publisher, for example `Canonical`. Required. |
@@ -138,12 +139,11 @@ Azure credentials, or assign roles on the resource group.
 
 ## Encrypted Data / Ansible Vault
 
-The role requires `azure_linux_vm_admin_password`, a secret. Store it in an
-Ansible Vault encrypted variable file rather than in plaintext in the
-inventory. Azure credentials belong in `.azure/credentials` or in the `AZURE_*`
-environment variables and must not be committed to the repository. You can
-encrypt further environment-specific values in your inventory using the
-standard Ansible Vault workflow if required.
+SSH password authentication is disabled for the VM; access is configured with
+the public key at `azure_linux_vm_ssh_public_key_file`. Keep the corresponding
+private key private and do not commit it. The repository ignores `.ssh/`.
+Azure credentials belong in `.azure/credentials` or in the `AZURE_*`
+environment variables and must not be committed to the repository.
 
 ## Tags
 
@@ -161,10 +161,10 @@ Available tags:
   create several, include it multiple times with different variable values.
 - The public IP address is always static and uses the `Standard` SKU.
 - The virtual network and subnet are managed by the `azure_network` role.
-- The role does not delete resources and does not manage credentials or role
-  assignments.
-- The role does not connect to the VM over SSH and does not configure the
-  operating system inside it.
+- Changing the admin username on an existing VM does not replace its existing
+  OS account; recreate the VM to apply a different username.
+- The role does not delete resources, connect to the VM over SSH, or manage
+  Azure credentials or role assignments.
 
 ## Run Ansible
 

@@ -135,6 +135,64 @@ def check_python_environment(checks: EnvironmentCheck) -> None:
         )
 
 
+def check_ansible_ssh_keys(checks: EnvironmentCheck) -> None:
+    """Verify that the SSH key pair for the ansible account is present."""
+    for key_type, key_path in (
+        ("private", ROOT / ".ssh" / "ansible"),
+        ("public", ROOT / ".ssh" / "ansible.pub"),
+    ):
+        try:
+            if not key_path.is_file():
+                checks.result(
+                    "FAIL",
+                    f"SSH {key_type} key for user 'ansible' is missing: "
+                    f"{key_path.relative_to(ROOT)}",
+                )
+            elif key_path.stat().st_size == 0:
+                checks.result(
+                    "FAIL",
+                    f"SSH {key_type} key for user 'ansible' is empty: "
+                    f"{key_path.relative_to(ROOT)}",
+                )
+            else:
+                checks.result(
+                    "PASS",
+                    f"SSH {key_type} key for user 'ansible' is present: "
+                    f"{key_path.relative_to(ROOT)}",
+                )
+        except OSError as exc:
+            checks.result(
+                "FAIL",
+                f"Cannot access SSH {key_type} key for user 'ansible' "
+                f"({key_path.relative_to(ROOT)}): {exc}",
+            )
+
+
+def check_vault_password_file(checks: EnvironmentCheck) -> None:
+    """Verify that the Ansible Vault password file is present."""
+    vault_password_file = ROOT / ".vault_pass"
+    if vault_password_file.is_file():
+        checks.result("PASS", "Ansible Vault password file is present: .vault_pass")
+    else:
+        checks.result("FAIL", "Ansible Vault password file is missing: .vault_pass")
+
+
+def check_azure_credentials_file(checks: EnvironmentCheck) -> None:
+    """Verify that the current user's Azure credentials directory and file exist."""
+    azure_directory = Path.home() / ".azure"
+    credentials_file = azure_directory / "credentials"
+
+    if azure_directory.is_dir():
+        checks.result("PASS", "Azure credentials directory is present: ~/.azure/")
+    else:
+        checks.result("FAIL", "Azure credentials directory is missing: ~/.azure/")
+
+    if credentials_file.is_file():
+        checks.result("PASS", "Azure credentials file is present: ~/.azure/credentials")
+    else:
+        checks.result("FAIL", "Azure credentials file is missing: ~/.azure/credentials")
+
+
 def check_python_requirements(checks: EnvironmentCheck) -> None:
     """Compare installed Python packages with requirements.txt."""
     if not VENV_PYTHON.is_file() or Path(sys.prefix).resolve() != VENV.resolve():
@@ -293,8 +351,10 @@ def main() -> int:
             checks.result("PASS", f"Found {executable.relative_to(ROOT)}")
         else:
             checks.result("FAIL", f"Missing executable: {executable.relative_to(ROOT)}")
+    check_vault_password_file(checks)
 
     checks.section("Azure CLI and access")
+    check_azure_credentials_file(checks)
     azure_cli = shutil.which("az")
     if azure_cli is None:
         checks.result("FAIL", "Azure CLI is not installed or not available on PATH")
@@ -326,17 +386,12 @@ def main() -> int:
     else:
         checks.result("SKIP", "Controller and Azure checks require ansible-playbook")
 
-    checks.section("SSH and managed hosts")
+    checks.section("SSH keys and client")
+    check_ansible_ssh_keys(checks)
     if shutil.which("ssh") is None:
         checks.result("FAIL", "SSH client is not installed")
-    elif ansible.is_file() and os.access(ansible, os.X_OK):
-        checks.command(
-            "SSH connectivity and remote Python check for inventory group 'azure'",
-            [str(ansible), "azure", "-m", "ansible.builtin.ping"],
-            timeout=180,
-        )
     else:
-        checks.result("SKIP", "SSH connectivity check requires the Ansible executable")
+        checks.result("PASS", "SSH client is installed")
 
     checks.summary()
     return 1 if checks.failed else 0

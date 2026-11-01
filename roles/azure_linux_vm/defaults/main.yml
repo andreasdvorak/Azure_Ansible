@@ -11,7 +11,7 @@ networkinterface_name: ""  # noqa: var-naming[no-role-prefix]
 azure_linux_vm_name: ""
 azure_linux_vm_size: ""
 azure_linux_vm_admin_username: ""
-azure_linux_vm_admin_password: ""
+azure_linux_vm_ssh_public_key_file: ""
 azure_linux_vm_os_offer: ""
 azure_linux_vm_os_sku: ""
 azure_linux_vm_publisher: ""

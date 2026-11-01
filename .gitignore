@@ -41,6 +41,7 @@ inventory.ini
 inventory.yml
 
 # SSH keys (niemals ins Repo!)
+.ssh/
 *.pem
 *.key
 
