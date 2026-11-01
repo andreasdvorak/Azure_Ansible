@@ -67,6 +67,20 @@ project files, not chat responses; respond to the user in the language they use.
   `AZURE_CLIENT_ID`, `AZURE_SECRET`, `AZURE_TENANT`,
   `AZURE_SUBSCRIPTION_ID` environment variables.
 
+## Configuration validation
+
+- When a module supports `validate` and the candidate file can be validated
+  before replacing the destination, use it to prevent invalid configuration
+  from being installed. For example:
+
+  ```yaml
+  validate: "nginx -t -c %s"
+  ```
+
+- Ansible substitutes `%s` with the temporary path of the candidate file.
+  The validation command must check that file; Ansible does not run it through
+  a shell.
+
 ## Playbooks
 
 1. Read `references/playbook-template.md` before adding a playbook.
