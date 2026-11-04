@@ -69,6 +69,11 @@ project files, not chat responses; respond to the user in the language they use.
 
 ## Configuration validation
 
+- Every template rendered by an Ansible role must start with the header
+  `# Managed by Ansible role {{ role_name }}`.
+- Every non-template file created by an Ansible role must start with the header
+  `# Managed by Ansible role <role_name>`, using the actual role name in place
+  of `<role_name>` (for example, `# Managed by Ansible role azure_linux_vm`).
 - When a module supports `validate` and the candidate file can be validated
   before replacing the destination, use it to prevent invalid configuration
   from being installed. For example:
